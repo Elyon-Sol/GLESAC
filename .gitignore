@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.env
+*.log
+.pytest_cache/
+.coverage
+# operator-local secrets - NEVER commit
+*.hex
+approver_signing_key*
+*_PRIVATE*
+config.local.*

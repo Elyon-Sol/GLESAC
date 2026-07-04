@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "glesac"
+version = "0.0.1"
+description = "Gargoyles Ledge - the Elyon-Sol Administrative Console (OPA-style operator toolkit)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Justin LaPorte" }]
+dependencies = [
+  # lean by intent; the web console uses FastAPI + uvicorn, bound to localhost.
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+glesac = "glesac.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["glesac*"]
