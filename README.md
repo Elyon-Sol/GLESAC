@@ -49,4 +49,6 @@ P2 HIL approval -> P3 administration. Operator capability; NOT external validati
 
 ## License
 
-Apache-2.0 (like OPA). See `LICENSE`.
+Proprietary and confidential. Copyright (c) 2026 Justin LaPorte. All rights reserved.
+Not licensed for use, copying, or distribution except under a separate written agreement.
+See `LICENSE`. Licensing inquiries: admin@elyon-sol.io
