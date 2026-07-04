@@ -1,0 +1,8 @@
+{
+  "predicates": {
+    "DEFAULT_SECURE": {"green": true},
+    "END_TO_END_NO_SHORTCUT": {"green": true},
+    "ROOT_RECOVERY": {"green": true},
+    "REAL_TRANSPORT": {"green": false}
+  }
+}

@@ -1,0 +1,2 @@
+{"type": "approval_request", "decision_sha256": "aaa111", "approval_request_id": "req-1"}
+{"type": "grant_consumed", "decision_sha256": "aaa111", "approval_request_id": "req-1", "grant_id": "grant-1"}

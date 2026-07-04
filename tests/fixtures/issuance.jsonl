@@ -1,0 +1,2 @@
+{"decision_sha256": "aaa111", "interaction": {"context": {"tool": "transfer_funds", "args_sha256": "ee0885"}}, "target_url": "https://target.elyon-sol.io:9443/target", "not_after": "2999-01-01T00:00:00Z"}
+{"decision_sha256": "bbb222", "interaction": {"context": {"tool": "read_report", "args_sha256": "12ab34"}}, "target_url": "https://target.elyon-sol.io:9443/target", "not_after": "2999-01-01T00:00:00Z"}
