@@ -1,0 +1,3 @@
+{"approval_request_id":"fc9f92bf55a541eea9d6226b237ca88a","decision_sha256":"e0a7fb303577e6c00e9a61d223d926806209f33d851257d360cb5451b04f60cc","type":"approval_request"}
+{"approval_request_id":"fc9f92bf55a541eea9d6226b237ca88a","approver_key_id":"approver-local-001","decision_sha256":"e0a7fb303577e6c00e9a61d223d926806209f33d851257d360cb5451b04f60cc","grant_id":"290aa82074f74f4b93c96f35d420b89c","type":"grant_consumed"}
+{"approval_request_id":"6c2496b29ecf45d59beeac0af2d64591","decision_sha256":"cbc8dd56d1cda21c9cee1cabe7641a2650d396fccbddf017a534a97b06779551","type":"approval_request"}

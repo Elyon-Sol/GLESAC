@@ -45,3 +45,11 @@ def test_serve_binds_localhost_only_REVERT_CATCHER():
     for bad in ("0.0.0.0", "10.0.0.5", ""):
         with pytest.raises(ValueError):
             server.serve(host=bad)
+
+
+def test_static_ui_assets_serve():
+    """The web UI is static assets (glesac/webui/), not an inline string."""
+    c = _client()
+    assert c.get("/").status_code == 200 and "GLESAC" in c.get("/").text
+    js = c.get("/static/app.js"); assert js.status_code == 200 and "loadStatus" in js.text
+    assert c.get("/static/style.css").status_code == 200

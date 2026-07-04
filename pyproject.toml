@@ -28,3 +28,6 @@ glesac = "glesac.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["glesac*"]
+
+[tool.setuptools.package-data]
+glesac = ["webui/*"]

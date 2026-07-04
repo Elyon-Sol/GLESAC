@@ -29,3 +29,17 @@ def test_trace_orders_the_timeline():
 def test_trace_executed_count_is_context_not_a_join():
     tl = dl.trace_by_decision(ISS, APP, "aaa111", executed_count=7)
     assert tl[-1]["stage"] == "executed_count" and tl[-1]["count"] == 7
+
+
+def test_reads_real_governance_record_shapes():
+    """Isolation: GLESAC parses the REAL Elyon-Sol governance records (captured fixtures),
+    so it builds/tests without Elyon-Sol present."""
+    gi = os.path.join(FIX, "gov_issuance.jsonl")
+    ga = os.path.join(FIX, "gov_approvals.jsonl")
+    # the real issuance envelope carries decision_sha256 at top level
+    env = dl.records(gi)[0]
+    assert "decision_sha256" in env and "issuer_signature" in env
+    dsha = env["decision_sha256"]
+    tl = dl.trace_by_decision(gi, ga, dsha)
+    stages = [e["stage"] for e in tl]
+    assert stages[0] == "issued" and "approval_request" in stages and "grant_consumed" in stages

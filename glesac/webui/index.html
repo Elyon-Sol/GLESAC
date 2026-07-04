@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GLESAC - Gargoyles Ledge</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>GLESAC &middot; Gargoyles Ledge</h1>
+<div class="sub">local operator console &mdash; read-only &mdash; 127.0.0.1</div>
+
+<div class="card" id="status-card">
+  <h2>Node status &amp; readiness</h2>
+  <div id="predicates" class="row"></div>
+  <div id="signed" style="margin-top:10px"></div>
+  <div id="nodes" style="margin-top:10px"></div>
+  <details style="margin-top:10px"><summary class="muted small">capabilities</summary>
+    <div id="capabilities"></div></details>
+</div>
+
+<div class="card">
+  <h2>Decision logs</h2>
+  <div class="row">
+    <select id="which"><option value="issued">issued</option><option value="approvals">approvals</option></select>
+    <label class="muted small">tail <input id="tail" type="number" value="25" style="width:70px"></label>
+    <button id="logs-refresh">refresh</button>
+  </div>
+  <div id="logs"></div>
+</div>
+
+<div class="card">
+  <h2>Action trace</h2>
+  <div class="row">
+    <input id="sha" placeholder="decision_sha256" style="width:min(520px,80%)">
+    <button id="trace-go">trace</button>
+  </div>
+  <ul id="trace" class="timeline"><li class="muted">enter a decision_sha256</li></ul>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
