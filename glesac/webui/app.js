@@ -51,21 +51,45 @@ async function loadStatus() {
   } catch (e) { box.appendChild(el("div", "err small", "status error: " + e.message)); }
 }
 
+function age(iso) {
+  if (!iso) return "";
+  const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
+  if (s < 90) return Math.round(s) + "s ago";
+  if (s < 5400) return Math.round(s / 60) + "m ago";
+  return Math.round(s / 3600) + "h ago";
+}
+
+function copyCmd(cmd, btn) {
+  const done = () => { btn.textContent = "copied"; setTimeout(() => btn.textContent = "copy cmd", 1200); };
+  if (navigator.clipboard) navigator.clipboard.writeText(cmd).then(done, () => window.prompt("copy:", cmd));
+  else window.prompt("copy:", cmd);
+}
+
 async function loadPending() {
   const box = $("pending"); box.innerHTML = "";
   try {
     const d = await api("/api/pending");
     const holds = d.pending || [];
+    const src = el("div", "muted small", "source: " + (d.source === "gate"
+      ? "gate /pending (live)" : "pulled logs (derived)"));
+    box.appendChild(src);
     if (!holds.length) { box.appendChild(el("div", "muted small", "(no pending holds)")); return; }
     const t = el("table"); const h = el("tr");
-    ["request", "decision", "target", "not_after"].forEach(c => h.appendChild(el("th", null, c)));
+    ["request", "decision", "target", "requested", ""].forEach(c => h.appendChild(el("th", null, c)));
     t.appendChild(h);
     holds.forEach(r => {
       const tr = el("tr"); const ctx = r.context || {};
       tr.appendChild(el("td", "mono", r.approval_request_id));
       tr.appendChild(el("td", "mono", short(r.decision_sha256)));
       tr.appendChild(el("td", "small muted", ctx.target_url || ""));
-      tr.appendChild(el("td", "small muted", ctx.not_after || ""));
+      const req = r.requested_at ? age(r.requested_at) + " (" + r.requested_at.slice(0, 19) + ")" : "";
+      tr.appendChild(el("td", "small muted", req));
+      const td = el("td");
+      const b = el("button", "small", "copy cmd");
+      b.addEventListener("click", () => copyCmd(
+        "glesac pending --approve " + r.approval_request_id, b));
+      td.appendChild(b);
+      tr.appendChild(td);
       t.appendChild(tr);
     });
     box.appendChild(t);

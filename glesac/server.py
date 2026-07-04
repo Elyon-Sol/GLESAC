@@ -53,9 +53,10 @@ def build_app(config: Optional[Config] = None):
         # READ-ONLY view of the HIL queue. Approve/deny are NOT web routes (docs/SECURITY.md):
         # mutations run locally via `glesac pending --approve/--deny` -> approver_cli custody.
         from . import approvals as _appr
-        return {"pending": _appr.pending_holds(cfg.approval_log, cfg.issuance_log),
-                "how_to_act": "run locally: glesac pending --approve <approval_request_id> "
-                              "(delegates to approver_cli) or --deny <id> --reason '...'"}
+        view = _appr.pending_view(cfg)
+        view["how_to_act"] = ("run locally: glesac pending --approve <approval_request_id> "
+                              "(delegates to approver_cli) or --deny <id> --reason '...'")
+        return view
 
     @app.get("/api/audit")
     def api_audit(tail: int = 50):

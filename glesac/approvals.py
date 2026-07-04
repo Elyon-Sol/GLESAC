@@ -105,3 +105,47 @@ def deny(hold: Dict, reason: str, *, audit: Optional[str] = None) -> Dict:
     return record_audit(audit_path(audit), "deny",
                         approval_request_id=hold.get("approval_request_id"),
                         decision_sha256=hold.get("decision_sha256"), reason=reason)
+
+def _fetch_json(url: str, timeout: float = 3.0):
+    """GET a read-only JSON endpoint; None on any failure (fallback stays log-based)."""
+    try:
+        import requests
+    except Exception:
+        return None
+    try:
+        r = requests.get(url, timeout=timeout)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except Exception:
+        return None
+
+
+def pending_from_gate(url: Optional[str]) -> Optional[List[Dict]]:
+    """Live holds from the gate's read-only /pending endpoint (requires
+    ELYON_GATE_READ_ENDPOINTS=1 on the gate, reached over the operator tunnel).
+    Returns None when unconfigured/unreachable/disabled - caller falls back to logs."""
+    if not url:
+        return None
+    data = _fetch_json(url)
+    if not isinstance(data, list):
+        return None
+    out = []
+    for r in data:
+        if not isinstance(r, dict):
+            return None
+        item = dict(r)
+        ctx = {k: r[k] for k in ("target_url", "not_after") if r.get(k)}
+        if ctx:
+            item["context"] = ctx
+        out.append(item)
+    return out
+
+
+def pending_view(cfg) -> Dict:
+    """The HIL queue with provenance: live gate /pending when available, else the
+    log-derived join. Same record shape either way."""
+    live = pending_from_gate(getattr(cfg, "gate_pending_url", None))
+    if live is not None:
+        return {"source": "gate", "pending": live}
+    return {"source": "logs", "pending": pending_holds(cfg.approval_log, cfg.issuance_log)}

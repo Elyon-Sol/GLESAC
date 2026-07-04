@@ -83,11 +83,12 @@ def main(argv=None) -> int:
         # approver key in LOCAL custody - GLESAC delegates and records, it never signs (SoD).
         from . import approvals as _appr
         cfg = Config.from_env()
-        holds = _appr.pending_holds(cfg.approval_log, cfg.issuance_log)
+        view = _appr.pending_view(cfg)
+        holds = view["pending"]
         if not a.approve and not a.deny:
             for h in holds:
                 print(json.dumps(h))
-            sys.stderr.write(f"{len(holds)} pending hold(s)\n")
+            sys.stderr.write(f"{len(holds)} pending hold(s) [source: {view['source']}]\n")
             return 0
         rid = a.approve or a.deny
         hold = _appr.find_hold(holds, rid)

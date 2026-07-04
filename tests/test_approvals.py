@@ -119,3 +119,36 @@ def test_cli_approve_cannot_mint_without_approver_cli_REVERT_CATCHER(tmp_path):
     assert "grant_id" not in r.stdout                      # nothing grant-like was produced
     rec = [json.loads(l) for l in open(env["GLESAC_CONSOLE_AUDIT"])][-1]
     assert rec["action"] == "approve_error"                # the failure itself is audited
+
+
+# ---- live gate /pending source (core read-endpoints, default-off on the gate) ----
+
+GATE_PENDING = [{"type": "approval_request", "approval_request_id": PENDING_ID,
+                 "decision_sha256": PENDING_SHA, "requested_at": "2026-07-04T22:00:00+00:00",
+                 "target_url": "https://upstream.local/highimpact"}]
+
+
+def test_pending_from_gate_normalizes_context(monkeypatch):
+    monkeypatch.setattr(approvals, "_fetch_json", lambda url, timeout=3.0: list(GATE_PENDING))
+    holds = approvals.pending_from_gate("http://gate.tunnel/pending")
+    assert holds[0]["approval_request_id"] == PENDING_ID
+    assert holds[0]["context"]["target_url"] == "https://upstream.local/highimpact"
+    assert holds[0]["requested_at"].startswith("2026-07-04")
+    assert approvals.pending_from_gate(None) is None       # unconfigured -> None
+
+
+def test_pending_view_prefers_gate_and_falls_back_to_logs(monkeypatch):
+    from glesac.config import Config
+    cfg = Config(approval_log=GOV_APP, issuance_log=GOV_ISS,
+                 gate_pending_url="http://gate.tunnel/pending")
+    monkeypatch.setattr(approvals, "_fetch_json", lambda url, timeout=3.0: list(GATE_PENDING))
+    v = approvals.pending_view(cfg)
+    assert v["source"] == "gate" and len(v["pending"]) == 1
+    # gate disabled/unreachable (404 -> None) -> log-derived fallback, same shape
+    monkeypatch.setattr(approvals, "_fetch_json", lambda url, timeout=3.0: None)
+    v2 = approvals.pending_view(cfg)
+    assert v2["source"] == "logs"
+    assert [h["approval_request_id"] for h in v2["pending"]] == [PENDING_ID]
+    # no gate URL at all -> logs, no fetch attempted
+    v3 = approvals.pending_view(Config(approval_log=GOV_APP, issuance_log=GOV_ISS))
+    assert v3["source"] == "logs"

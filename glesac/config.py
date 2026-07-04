@@ -15,6 +15,7 @@ ENV = {
     "readiness": "GLESAC_READINESS",
     "signed_record": "GLESAC_SIGNED_RECORD",
     "gate_url": "GLESAC_GATE_URL",
+    "gate_pending_url": "GLESAC_GATE_PENDING_URL",
     "target_url": "GLESAC_TARGET_URL",
     "authz_url": "GLESAC_AUTHZ_URL",
     "pub_url": "GLESAC_PUB_URL",
@@ -28,6 +29,7 @@ class Config:
     readiness: Optional[str] = None
     signed_record: Optional[str] = None
     gate_url: Optional[str] = None
+    gate_pending_url: Optional[str] = None
     target_url: Optional[str] = None
     authz_url: Optional[str] = None
     pub_url: Optional[str] = None
@@ -42,7 +44,7 @@ class Config:
         vals.update({k: v for k, v in overrides.items() if v is not None})
         c = cls(**{k: vals.get(k) for k in
                    ("issuance_log", "approval_log", "readiness", "signed_record",
-                    "gate_url", "target_url", "authz_url", "pub_url")},
+                    "gate_url", "gate_pending_url", "target_url", "authz_url", "pub_url")},
                 clock_skew_seconds=vals["clock_skew_seconds"])
         c.nodes = {
             "gate": c.gate_url, "target": c.target_url,

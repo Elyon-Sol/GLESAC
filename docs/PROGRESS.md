@@ -50,9 +50,15 @@ importing core internals. Proprietary, private repo.
   Key-material law: the `--print-private` flag is REFUSED before invocation (revert-catcher,
   proven RED) so secret material can never transit GLESAC. Verified live: real rotation runbook
   run through the trigger - public key on stdout, new key in a 0600 file, audit recorded.
-- **No scheduled phase after P3.** Backlog candidates (build only when needed): consume the gate
-  `/pending`,`/audit` read-endpoints if the core ships them; local session token for shared
-  boxes (DESIGN section 5); update `docs/overview.svg` alongside any such change.
+- **P3.1 DONE** - live HIL queue detail. The core SHIPPED the gate read-endpoints (`GET
+  /pending`, `GET /audit?tail=N`; DEFAULT OFF, `ELYON_GATE_READ_ENDPOINTS=1`; hold records now
+  carry `requested_at` + `target_url`). GLESAC consumes them: `pending_view` prefers the live
+  gate `/pending` (`GLESAC_GATE_PENDING_URL`, over the operator tunnel) and falls back to the
+  log-derived join on 404/unreachable - same record shape either way; CLI and card report the
+  source. Card ergonomics: source badge, requested-at age, per-row copy-ready approve command.
+  Verified live both ways (flag on -> source: gate with context; flag off -> 404 -> logs).
+- **No scheduled phase after P3.1.** Backlog candidates (build only when needed): consume gate
+  `/audit` for a remote-log view; local session token for shared boxes (DESIGN section 5).
 
 ## Visual overview
 
@@ -64,6 +70,9 @@ read-endpoints are ever consumed.
 
 1. CLIs by invocation: `envelope_inspector` (inspect/reevaluate/reconcile), `approver_cli`.
    Point at them with `ELYON_SOL_HOME` or PATH.
+1b. Gate read-endpoints (OPTIONAL, default-off on the gate): `GET /pending` (held-not-consumed
+   with public context), `GET /audit?tail=N`. Gate enables with `ELYON_GATE_READ_ENDPOINTS=1`;
+   GLESAC points at them with `GLESAC_GATE_PENDING_URL` and degrades to pulled logs when absent.
 2. JSONL schemas: issuance log (one envelope/line; `decision_sha256` top-level) and approval log
    (`approval_request` / `grant_consumed`, keyed by `decision_sha256` + `approval_request_id`).
 3. Readiness JSON: `deployment_predicates` (DEFAULT_SECURE/END_TO_END_NO_SHORTCUT/ROOT_RECOVERY/
@@ -77,7 +86,7 @@ Real-shape fixtures live in `tests/fixtures/` (`gov_issuance.jsonl`, `gov_approv
   - a single-box driver that runs the real 202->approve->consume flow and writes real
   issuance/approval logs. Point GLESAC at those (`GLESAC_ISSUANCE_LOG` / `GLESAC_APPROVAL_LOG`).
 - **Config env vars:** `GLESAC_ISSUANCE_LOG`, `GLESAC_APPROVAL_LOG`, `GLESAC_READINESS`,
-  `GLESAC_SIGNED_RECORD`, `GLESAC_CONSOLE_AUDIT`, `GLESAC_{GATE,TARGET,AUTHZ,PUB}_URL`,
+  `GLESAC_SIGNED_RECORD`, `GLESAC_CONSOLE_AUDIT`, `GLESAC_{GATE,TARGET,AUTHZ,PUB}_URL`, `GLESAC_GATE_PENDING_URL`,
   `ELYON_SOL_HOME`.
 - **Opt-in live-node check:** `GLESAC_LIVE_NODES=1 python -m pytest -q` additionally runs the
   live-node smoke tests (`tests/test_live_nodes.py`, the 2 default skips) against whatever node
@@ -89,6 +98,6 @@ Real-shape fixtures live in `tests/fixtures/` (`gov_issuance.jsonl`, `gov_approv
 
 ## Resume in one line
 
-Read this file + `docs/DESIGN.md` + `docs/SECURITY.md`, run the tests green (36 passed,
+Read this file + `docs/DESIGN.md` + `docs/SECURITY.md`, run the tests green (38 passed,
 2 skipped). P0-P3 are DONE; there is no scheduled next phase - pick up from the backlog
 candidates above only when a real need arrives.

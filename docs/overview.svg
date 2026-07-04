@@ -57,7 +57,7 @@
 <g font-size="12" font-weight="600" fill="#1a1a1a">
 <rect x="632" y="98" width="214" height="52" rx="6" fill="#ffffff" stroke="#c9c9c9"/>
 <text x="739" y="119" text-anchor="middle">gate :8443</text>
-<text x="739" y="134" font-size="9.5" font-weight="400" text-anchor="middle" fill="#666666">/governed-call - 202 holds</text>
+<text x="739" y="134" font-size="9.5" font-weight="400" text-anchor="middle" fill="#666666">/governed-call · /pending*</text>
 <rect x="632" y="160" width="214" height="52" rx="6" fill="#ffffff" stroke="#c9c9c9"/>
 <text x="739" y="181" text-anchor="middle">target :9443</text>
 <text x="739" y="196" font-size="9.5" font-weight="400" text-anchor="middle" fill="#666666">/received - executed count</text>
@@ -98,4 +98,5 @@
 <text x="600" y="587">GLESAC_LIVE_NODES=1</text>
 <text x="600" y="601" font-family="ui-sans-serif, system-ui, sans-serif" font-style="italic" fill="#666666">opt-in live-node suite</text>
 </g>
+<text x="630" y="382" font-size="8.5" font-style="italic" fill="#666666">* /pending, /audit: read-only, DEFAULT OFF (ELYON_GATE_READ_ENDPOINTS=1), operator tunnel only</text>
 </svg>
