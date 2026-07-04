@@ -22,6 +22,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+live = ["requests>=2"]
 
 [project.scripts]
 glesac = "glesac.cli:main"
