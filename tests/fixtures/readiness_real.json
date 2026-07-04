@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "capabilities": {
+    "issuer_signing": {
+      "built": {"value": true}, "wired_to_default": {"value": true},
+      "exercised_e2e": {"value": true}, "transported": {"value": true}
+    }
+  },
+  "deployment_predicates": {
+    "DEFAULT_SECURE": {"green": true},
+    "END_TO_END_NO_SHORTCUT": {"green": true},
+    "ROOT_RECOVERY": {"green": true},
+    "REAL_TRANSPORT": {"green": true}
+  }
+}

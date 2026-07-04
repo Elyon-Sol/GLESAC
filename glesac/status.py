@@ -1,8 +1,7 @@
 """`glesac status` - node health + record freshness + readiness. READ-ONLY.
 
 Works offline from pulled files (readiness summary, signed record). Live node probes are
-best-effort: if a node URL is set and reachable, its reachability is reported; otherwise the node
-is 'unconfigured' or 'unreachable'. GLESAC never writes to a node here.
+best-effort. GLESAC never writes to a node here.
 """
 from __future__ import annotations
 import datetime as _dt
@@ -12,6 +11,7 @@ from typing import Any, Dict, Optional
 from .config import Config
 
 PREDICATES = ("DEFAULT_SECURE", "END_TO_END_NO_SHORTCUT", "ROOT_RECOVERY", "REAL_TRANSPORT")
+_CAP_FLAGS = ("built", "wired_to_default", "exercised_e2e", "transported")
 
 
 def _now(now: Optional[_dt.datetime]) -> _dt.datetime:
@@ -39,18 +39,36 @@ def _load_json(path: Optional[str]) -> Optional[Dict]:
 
 
 def readiness_summary(path: Optional[str]) -> Dict[str, Optional[bool]]:
-    """Tolerant read of the readiness summary -> {predicate: green|None}."""
+    """Tolerant read of the readiness predicates -> {predicate: green|None}.
+
+    Handles the real Elyon-Sol readiness.json (`deployment_predicates` with a `green` flag) and
+    the simpler `predicates`/top-level shapes.
+    """
     data = _load_json(path) or {}
-    preds = data.get("predicates", data)
+    preds = data.get("deployment_predicates") or data.get("predicates") or data
     out: Dict[str, Optional[bool]] = {}
     for name in PREDICATES:
         entry = preds.get(name) if isinstance(preds, dict) else None
         if isinstance(entry, dict):
-            out[name] = entry.get("green")
+            v = entry.get("green")
+            out[name] = v if v is not None else entry.get("value")
         elif isinstance(entry, bool):
             out[name] = entry
         else:
             out[name] = None
+    return out
+
+
+def capabilities_summary(path: Optional[str]) -> Dict[str, Dict[str, Optional[bool]]]:
+    """The Elyon-Sol readiness `capabilities` block -> {name: {flag: value}}. {} if absent."""
+    caps = (_load_json(path) or {}).get("capabilities")
+    if not isinstance(caps, dict):
+        return {}
+    out: Dict[str, Dict[str, Optional[bool]]] = {}
+    for name, cap in caps.items():
+        if isinstance(cap, dict):
+            out[name] = {f: (cap.get(f) or {}).get("value") if isinstance(cap.get(f), dict)
+                         else None for f in _CAP_FLAGS}
     return out
 
 
@@ -78,7 +96,7 @@ def probe_nodes(config: Config, timeout: float = 3.0) -> Dict[str, Dict[str, Any
     """Best-effort reachability of configured node URLs. No probe if requests is unavailable."""
     out: Dict[str, Dict[str, Any]] = {}
     try:
-        import requests  # optional
+        import requests
     except Exception:
         requests = None
     for name, url in config.nodes.items():
@@ -91,7 +109,7 @@ def probe_nodes(config: Config, timeout: float = 3.0) -> Dict[str, Dict[str, Any
         try:
             r = requests.get(url, timeout=timeout, verify=True)
             out[name] = {"url": url, "state": "reachable", "http": r.status_code}
-        except Exception as e:  # network errors are a status, not a crash
+        except Exception as e:
             out[name] = {"url": url, "state": "unreachable", "error": type(e).__name__}
     return out
 
@@ -99,6 +117,7 @@ def probe_nodes(config: Config, timeout: float = 3.0) -> Dict[str, Dict[str, Any
 def gather(config: Config, now: Optional[_dt.datetime] = None, probe: bool = True) -> Dict[str, Any]:
     return {
         "readiness": readiness_summary(config.readiness),
+        "capabilities": capabilities_summary(config.readiness),
         "signed_record": record_freshness(config.signed_record, now, config.clock_skew_seconds),
         "nodes": probe_nodes(config) if probe else {},
     }

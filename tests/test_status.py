@@ -32,3 +32,14 @@ def test_gather_offline_no_probe():
 def test_probe_unconfigured_nodes_do_not_crash():
     nodes = status.probe_nodes(Config())   # no URLs
     assert all(v["state"] == "unconfigured" for v in nodes.values())
+
+
+def test_real_readiness_schema_deployment_predicates_and_capabilities():
+    """The real Elyon-Sol readiness.json uses deployment_predicates + capabilities."""
+    p = os.path.join(FIX, "readiness_real.json")
+    r = status.readiness_summary(p)
+    assert r["DEFAULT_SECURE"] is True and r["REAL_TRANSPORT"] is True
+    caps = status.capabilities_summary(p)
+    assert caps["issuer_signing"]["wired_to_default"] is True
+    # the simple 'predicates' fixture has no capabilities block -> {}
+    assert status.capabilities_summary(os.path.join(FIX, "readiness.json")) == {}
