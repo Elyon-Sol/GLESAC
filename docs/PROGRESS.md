@@ -43,6 +43,12 @@ importing core internals. Proprietary, private repo.
   Verified live end-to-end against `run_local_governance.py` logs with the real `approver_cli`.
 - **P3 NEXT** - administration (rotation triggers to the existing local runbooks; audited).
 
+## Visual overview
+
+`docs/overview.svg` - the P2 communication & configuration map (trust boundary, invocation vs
+read vs network legs, env vars). Update it when P3 adds legs (rotation runbooks; gate
+`/pending`,`/audit` read-endpoints if/when the core ships them).
+
 ## Interface contract (all GLESAC depends on from Elyon-Sol)
 
 1. CLIs by invocation: `envelope_inspector` (inspect/reevaluate/reconcile), `approver_cli`.
