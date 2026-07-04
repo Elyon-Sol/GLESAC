@@ -42,6 +42,12 @@ def main(argv=None) -> int:
     pd.add_argument("--reason", help="reason for the deny (required with --deny)")
     pd.add_argument("--ttl", type=int, default=300, help="grant lifetime in seconds (approve)")
     pd.add_argument("--yes", action="store_true", help="skip the confirm prompt (approve)")
+    ad = sub.add_parser("admin", help="ADMIN: trigger a whitelisted Elyon-Sol runbook (local, audited)")
+    ad.add_argument("runbook", help="rotate-publisher-key | renew-certs")
+    ad.add_argument("--yes", action="store_true", help="skip the confirm prompt")
+    ad.add_argument("rest", nargs=argparse.REMAINDER, help="passed through to the runbook")
+    au = sub.add_parser("audit", help="view the local console-audit log (operator decisions)")
+    au.add_argument("--tail", type=int, default=50)
     rp = sub.add_parser("run", help="start the localhost web console (127.0.0.1 only)")
     rp.add_argument("--port", type=int, default=8181)
 
@@ -112,6 +118,37 @@ def main(argv=None) -> int:
         print(json.dumps(grant))
         sys.stderr.write("grant emitted by approver_cli; present it to the gate "
                          "(X-Elyon-Sol-Approval-Grant).\n")
+        return 0
+    if a.cmd == "admin":
+        # P3: mutation -> local runbook by invocation, operator-confirmed, audited. Never a web route.
+        from . import admin as _admin
+        from . import invoke as _invoke
+        if a.runbook not in _invoke.RUNBOOKS:
+            sys.stderr.write(f"unknown runbook '{a.runbook}' (allowed: {', '.join(sorted(_invoke.RUNBOOKS))})\n")
+            return 2
+        # argparse.REMAINDER swallows flags placed after the runbook name - lift --yes out
+        rest = [x for x in a.rest if x != "--yes"]
+        yes = a.yes or ("--yes" in a.rest)
+        if not yes:
+            sys.stderr.write(f"About to run runbook '{a.runbook}' with args {rest}.\n"
+                             f"Type the runbook name to confirm: ")
+            sys.stderr.flush()
+            if sys.stdin.readline().strip() != a.runbook:
+                sys.stderr.write("aborted (nothing run)\n")
+                return 1
+        try:
+            cp = _admin.trigger(a.runbook, rest)
+        except (ValueError, FileNotFoundError) as e:
+            sys.stderr.write(f"admin failed: {e}\n")
+            return 3
+        sys.stdout.write(cp.stdout)
+        sys.stderr.write(cp.stderr)
+        return cp.returncode
+    if a.cmd == "audit":
+        from . import approvals as _appr
+        from . import decision_logs as _logs
+        for rec in _logs.tail(_appr.audit_path(), a.tail):
+            print(json.dumps(rec))
         return 0
     if a.cmd == "run":
         from . import server

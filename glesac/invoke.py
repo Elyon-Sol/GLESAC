@@ -45,3 +45,31 @@ def run(tool: str, args: List[str], *, input_text: Optional[str] = None) -> subp
 # NOTE (SoD, [FIX H5]): GLESAC never signs a grant itself. `glesac approve` MUST invoke
 # approver_cli, which reads the approver's PRIVATE key from local custody. There is deliberately
 # no signing primitive in this package. A revert-catcher test asserts this (tests/).
+
+# P3: the ONLY runbooks GLESAC may trigger - a fixed whitelist of existing Elyon-Sol repo
+# scripts, resolved under ELYON_SOL_HOME. GLESAC adds no admin capability of its own.
+RUNBOOKS = {
+    "rotate-publisher-key": os.path.join("deploy", "rotate_publisher_key.py"),
+    "renew-certs": os.path.join("deploy", "tls", "gen_certs.py"),
+}
+
+
+def run_runbook(name: str, args: List[str]) -> subprocess.CompletedProcess:
+    """Run a whitelisted Elyon-Sol runbook (mutation - caller must confirm + audit).
+
+    Requires ELYON_SOL_HOME (runbooks are repo files, not PATH tools). Output passes through
+    to the operator; GLESAC never captures secrets - the rotation runbook writes the new key
+    to a 0600 file and prints only PUBLIC material by design.
+    """
+    if name not in RUNBOOKS:
+        raise ValueError(f"unknown runbook '{name}' (allowed: {', '.join(sorted(RUNBOOKS))})")
+    home = os.environ.get(CORE_HOME_ENV)
+    if not home:
+        raise FileNotFoundError(f"set {CORE_HOME_ENV} to locate the runbooks.")
+    script = os.path.join(home, RUNBOOKS[name])
+    if not os.path.exists(script):
+        raise FileNotFoundError(f"runbook not found: {script}")
+    env = dict(os.environ)
+    env["PYTHONPATH"] = home + os.pathsep + env.get("PYTHONPATH", "")
+    return subprocess.run([sys.executable, script] + list(args),
+                          capture_output=True, text=True, env=env)

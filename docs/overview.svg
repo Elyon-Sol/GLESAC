@@ -1,12 +1,12 @@
 <svg viewBox="0 0 880 632" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
-<title>GLESAC communication and configuration overview (P2)</title>
+<title>GLESAC communication and configuration overview (P3)</title>
 <desc>GLESAC on the operator machine reads local JSONL logs and files, invokes Elyon-Sol CLIs as subprocesses, appends to a local console-audit log, and makes read-only HTTPS probes to four public nodes.</desc>
 <defs>
 <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3b82f6"/></marker>
 <marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
 </defs>
 <rect x="0" y="0" width="880" height="632" fill="#ffffff"/>
-<text x="16" y="24" font-size="15" font-weight="700" fill="#1a1a1a">GLESAC — communication &amp; configuration (P2, current)</text>
+<text x="16" y="24" font-size="15" font-weight="700" fill="#1a1a1a">GLESAC — communication &amp; configuration (P3, current)</text>
 <g font-size="10.5" fill="#666666">
 <line x1="500" y1="20" x2="524" y2="20" stroke="#3b82f6" stroke-width="2"/><text x="529" y="24">local read</text>
 <line x1="596" y1="20" x2="620" y2="20" stroke="#d97706" stroke-width="2"/><text x="625" y="24">invoke / append</text>
@@ -72,6 +72,11 @@
 <text x="513" y="132" font-size="9.5" text-anchor="middle" fill="#666666">HTTPS GET probes - read-only</text>
 <path d="M108,272 V456 H739 V372" fill="none" stroke="#d97706" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#aa)"/>
 <text x="430" y="450" font-size="9.5" text-anchor="middle" fill="#d97706">signed grant - operator presents to gate (X-Elyon-Sol-Approval-Grant)</text>
+<rect x="440" y="180" width="126" height="60" rx="6" fill="#ffffff" stroke="#d97706"/>
+<text x="503" y="200" font-size="11" font-weight="600" text-anchor="middle" fill="#1a1a1a">runbooks</text>
+<text x="503" y="214" font-size="9" text-anchor="middle" fill="#666666">rotate-publisher-key</text>
+<text x="503" y="226" font-size="9" text-anchor="middle" fill="#666666">renew-certs</text>
+<line x1="412" y1="200" x2="436" y2="204" stroke="#d97706" stroke-width="1.8" marker-end="url(#aa)"/>
 <rect x="16" y="496" width="848" height="122" rx="10" fill="#f3f3f2" stroke="#c9c9c9"/>
 <text x="32" y="517" font-size="10.5" font-weight="700" letter-spacing="1.2" fill="#777777">CONFIGURATION - ENV VARS (captured at process start)</text>
 <g font-size="10" font-family="ui-monospace, monospace" fill="#1a1a1a">

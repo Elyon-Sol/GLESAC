@@ -72,6 +72,28 @@ async function loadPending() {
   } catch (e) { box.appendChild(el("div", "err small", "pending error: " + e.message)); }
 }
 
+async function loadAudit() {
+  const box = $("audit"); box.innerHTML = "";
+  try {
+    const d = await api("/api/audit?tail=15");
+    const recs = d.records || [];
+    if (!recs.length) { box.appendChild(el("div", "muted small", "(no operator decisions recorded)")); return; }
+    const t = el("table"); const h = el("tr");
+    ["when", "action", "subject", "detail"].forEach(c => h.appendChild(el("th", null, c)));
+    t.appendChild(h);
+    recs.slice().reverse().forEach(r => {
+      const tr = el("tr");
+      tr.appendChild(el("td", "small muted", (r.ts || "").slice(0, 19)));
+      tr.appendChild(el("td", null, r.action));
+      tr.appendChild(el("td", "mono", r.runbook || short(r.approval_request_id) || ""));
+      const det = r.reason || r.error || (r.grant_id ? "grant " + short(r.grant_id) : (r.returncode != null ? "rc " + r.returncode : ""));
+      tr.appendChild(el("td", "small muted", det));
+      t.appendChild(tr);
+    });
+    box.appendChild(t);
+  } catch (e) { box.appendChild(el("div", "err small", "audit error: " + e.message)); }
+}
+
 async function loadLogs() {
   const which = $("which").value, tail = $("tail").value;
   const box = $("logs"); box.innerHTML = "";
@@ -119,4 +141,4 @@ async function loadTrace() {
 $("logs-refresh").addEventListener("click", loadLogs);
 $("trace-go").addEventListener("click", loadTrace);
 $("sha").addEventListener("keydown", (e) => { if (e.key === "Enter") loadTrace(); });
-loadStatus(); loadPending(); loadLogs();
+loadStatus(); loadPending(); loadLogs(); loadAudit();

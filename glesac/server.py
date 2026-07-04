@@ -57,6 +57,12 @@ def build_app(config: Optional[Config] = None):
                 "how_to_act": "run locally: glesac pending --approve <approval_request_id> "
                               "(delegates to approver_cli) or --deny <id> --reason '...'"}
 
+    @app.get("/api/audit")
+    def api_audit(tail: int = 50):
+        # READ-ONLY view of the local console-audit log (operator approve/deny/runbook records).
+        from . import approvals as _appr
+        return {"records": _logs.tail(_appr.audit_path(), tail)}
+
     # static UI (glesac/webui/): /static/* assets + index.html at /
     if os.path.isdir(_WEBUI_DIR):
         app.mount("/static", StaticFiles(directory=_WEBUI_DIR), name="static")

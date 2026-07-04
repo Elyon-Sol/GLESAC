@@ -41,13 +41,24 @@ importing core internals. Proprietary, private repo.
   catcher proves `pending --approve` cannot mint a grant without `approver_cli`; a server
   catcher fails on any non-GET web route (mutations are CLI-only, never a web route).
   Verified live end-to-end against `run_local_governance.py` logs with the real `approver_cli`.
-- **P3 NEXT** - administration (rotation triggers to the existing local runbooks; audited).
+- **P3 DONE** - administration: `glesac admin <runbook>` triggers the existing Elyon-Sol
+  runbooks by invocation from a CLOSED whitelist (`rotate-publisher-key` ->
+  `deploy/rotate_publisher_key.py`, `renew-certs` -> `deploy/tls/gen_certs.py`; resolved under
+  `ELYON_SOL_HOME`). Mutation gate: operator must type the runbook name (or `--yes`); every
+  trigger/refusal/failure is appended to the console-audit log; `glesac audit` + a read-only
+  dashboard card view it (`/api/audit` - still GET-only, the no-mutating-routes catcher holds).
+  Key-material law: the `--print-private` flag is REFUSED before invocation (revert-catcher,
+  proven RED) so secret material can never transit GLESAC. Verified live: real rotation runbook
+  run through the trigger - public key on stdout, new key in a 0600 file, audit recorded.
+- **No scheduled phase after P3.** Backlog candidates (build only when needed): consume the gate
+  `/pending`,`/audit` read-endpoints if the core ships them; local session token for shared
+  boxes (DESIGN section 5); update `docs/overview.svg` alongside any such change.
 
 ## Visual overview
 
-`docs/overview.svg` - the P2 communication & configuration map (trust boundary, invocation vs
-read vs network legs, env vars). Update it when P3 adds legs (rotation runbooks; gate
-`/pending`,`/audit` read-endpoints if/when the core ships them).
+`docs/overview.svg` - the P3 communication & configuration map (trust boundary, invocation vs
+read vs network legs, env vars). Update it if the gate `/pending`,`/audit`
+read-endpoints are ever consumed.
 
 ## Interface contract (all GLESAC depends on from Elyon-Sol)
 
@@ -78,5 +89,6 @@ Real-shape fixtures live in `tests/fixtures/` (`gov_issuance.jsonl`, `gov_approv
 
 ## Resume in one line
 
-Read this file + `docs/DESIGN.md` + `docs/SECURITY.md`, run the tests green (28 passed,
-2 skipped), then continue at the "P3 NEXT" item above.
+Read this file + `docs/DESIGN.md` + `docs/SECURITY.md`, run the tests green (36 passed,
+2 skipped). P0-P3 are DONE; there is no scheduled next phase - pick up from the backlog
+candidates above only when a real need arrives.
