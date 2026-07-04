@@ -31,9 +31,17 @@ importing core internals. Proprietary, private repo.
 - **P1 DONE** - read-only console + CLI: `status`, `logs`, `trace`, `run` (localhost web
   dashboard); config via env; fixtures + tests. Reads the real Elyon-Sol `readiness.json`
   (`deployment_predicates` + `capabilities`) and the JSONL decision logs.
-- **P2 NEXT** - HIL approval queue: surface pending 202 holds, human approve/deny, sign via local
-  `approver_cli`. The SoD revert-catcher must stay green.
-- **P3** - administration (rotation triggers to the existing local runbooks; audited).
+- **P2 DONE** - HIL approval queue: `glesac pending` + dashboard card surface `approval_request`
+  records with no matching `grant_consumed`; approve DELEGATES to the local `approver_cli`
+  (pending JSON on stdin, `--yes --ttl`; key custody stays in the approver's env -
+  `ELYON_APPROVER_KEY_HEX`/`_ID` - GLESAC never signs); deny records a reason to the local
+  console-audit log (`GLESAC_CONSOLE_AUDIT`, default `~/.glesac/console_audit.jsonl`).
+  Revert-catchers extended and proven RED-on-revert: signing-primitive scan now covers
+  `build_grant`/`hazmat`/etc. + the webui and bans crypto imports package-wide; a functional
+  catcher proves `pending --approve` cannot mint a grant without `approver_cli`; a server
+  catcher fails on any non-GET web route (mutations are CLI-only, never a web route).
+  Verified live end-to-end against `run_local_governance.py` logs with the real `approver_cli`.
+- **P3 NEXT** - administration (rotation triggers to the existing local runbooks; audited).
 
 ## Interface contract (all GLESAC depends on from Elyon-Sol)
 
@@ -52,7 +60,11 @@ Real-shape fixtures live in `tests/fixtures/` (`gov_issuance.jsonl`, `gov_approv
   - a single-box driver that runs the real 202->approve->consume flow and writes real
   issuance/approval logs. Point GLESAC at those (`GLESAC_ISSUANCE_LOG` / `GLESAC_APPROVAL_LOG`).
 - **Config env vars:** `GLESAC_ISSUANCE_LOG`, `GLESAC_APPROVAL_LOG`, `GLESAC_READINESS`,
-  `GLESAC_SIGNED_RECORD`, `GLESAC_{GATE,TARGET,AUTHZ,PUB}_URL`, `ELYON_SOL_HOME`.
+  `GLESAC_SIGNED_RECORD`, `GLESAC_CONSOLE_AUDIT`, `GLESAC_{GATE,TARGET,AUTHZ,PUB}_URL`,
+  `ELYON_SOL_HOME`.
+- **Opt-in live-node check:** `GLESAC_LIVE_NODES=1 python -m pytest -q` additionally runs the
+  live-node smoke tests (`tests/test_live_nodes.py`, the 2 default skips) against whatever node
+  URLs are configured. Default suite stays hermetic - fixtures only, no network.
 - **Mount hazard (Cowork sandbox only):** host file-tool writes to this folder truncate
   intermittently. When editing via the sandbox, write files through bash and verify byte counts
   + `ast.parse`. Native (laptop) editing is unaffected.
@@ -60,5 +72,5 @@ Real-shape fixtures live in `tests/fixtures/` (`gov_issuance.jsonl`, `gov_approv
 
 ## Resume in one line
 
-Read this file + `docs/DESIGN.md` + `docs/SECURITY.md`, run the tests green, then continue at the
-"P2 NEXT" item above.
+Read this file + `docs/DESIGN.md` + `docs/SECURITY.md`, run the tests green (28 passed,
+2 skipped), then continue at the "P3 NEXT" item above.

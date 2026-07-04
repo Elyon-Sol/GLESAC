@@ -20,6 +20,14 @@
 </div>
 
 <div class="card">
+  <h2>HIL approval queue <span class="muted small">(pending 202 holds)</span></h2>
+  <div id="pending"></div>
+  <div class="muted small" style="margin-top:8px">approve/deny run LOCALLY (never a web route):
+    <span class="mono">glesac pending --approve &lt;id&gt;</span> &middot;
+    <span class="mono">glesac pending --deny &lt;id&gt; --reason "..."</span></div>
+</div>
+
+<div class="card">
   <h2>Decision logs</h2>
   <div class="row">
     <select id="which"><option value="issued">issued</option><option value="approvals">approvals</option></select>

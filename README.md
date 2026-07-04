@@ -22,6 +22,7 @@ REUSE the installed Elyon-Sol tools by invocation (no re-implementation of verif
 | `glesac reevaluate <envelope>` | semantic re-evaluation | `envelope_inspector reevaluate` |
 | `glesac reconcile --issued --executed` | issued-vs-executed audit | `envelope_inspector reconcile` |
 | `glesac approve` | HIL: sign an approval grant (LOCAL key custody) | `approver_cli` |
+| `glesac pending` | HIL queue: list pending 202 holds; `--approve` delegates to `approver_cli`, `--deny` records to the console audit | approval log + `approver_cli` |
 | `glesac status` | node health + readiness predicates | node endpoints + `readiness` |
 | `glesac logs` | tail/query the JSONL decision logs | issuance/approval logs |
 | `glesac run` | start the localhost web console (OPA `run -s`, 127.0.0.1 only) | this repo |
@@ -44,7 +45,7 @@ glesac --help
 
 ## Status
 
-Scaffold. Build order (see `docs/DESIGN.md`): P0 spec -> P1 read-only console + CLI shell ->
+P2 (HIL approval queue) done. Build order (see `docs/DESIGN.md`): P0 spec -> P1 read-only console + CLI shell ->
 P2 HIL approval -> P3 administration. Operator capability; NOT external validation of the gate.
 
 ## License

@@ -48,6 +48,15 @@ def build_app(config: Optional[Config] = None):
         return {"decision_sha256": decision_sha256,
                 "timeline": _logs.trace_by_decision(cfg.issuance_log, cfg.approval_log, decision_sha256)}
 
+    @app.get("/api/pending")
+    def api_pending():
+        # READ-ONLY view of the HIL queue. Approve/deny are NOT web routes (docs/SECURITY.md):
+        # mutations run locally via `glesac pending --approve/--deny` -> approver_cli custody.
+        from . import approvals as _appr
+        return {"pending": _appr.pending_holds(cfg.approval_log, cfg.issuance_log),
+                "how_to_act": "run locally: glesac pending --approve <approval_request_id> "
+                              "(delegates to approver_cli) or --deny <id> --reason '...'"}
+
     # static UI (glesac/webui/): /static/* assets + index.html at /
     if os.path.isdir(_WEBUI_DIR):
         app.mount("/static", StaticFiles(directory=_WEBUI_DIR), name="static")

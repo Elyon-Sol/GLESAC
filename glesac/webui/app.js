@@ -51,6 +51,27 @@ async function loadStatus() {
   } catch (e) { box.appendChild(el("div", "err small", "status error: " + e.message)); }
 }
 
+async function loadPending() {
+  const box = $("pending"); box.innerHTML = "";
+  try {
+    const d = await api("/api/pending");
+    const holds = d.pending || [];
+    if (!holds.length) { box.appendChild(el("div", "muted small", "(no pending holds)")); return; }
+    const t = el("table"); const h = el("tr");
+    ["request", "decision", "target", "not_after"].forEach(c => h.appendChild(el("th", null, c)));
+    t.appendChild(h);
+    holds.forEach(r => {
+      const tr = el("tr"); const ctx = r.context || {};
+      tr.appendChild(el("td", "mono", r.approval_request_id));
+      tr.appendChild(el("td", "mono", short(r.decision_sha256)));
+      tr.appendChild(el("td", "small muted", ctx.target_url || ""));
+      tr.appendChild(el("td", "small muted", ctx.not_after || ""));
+      t.appendChild(tr);
+    });
+    box.appendChild(t);
+  } catch (e) { box.appendChild(el("div", "err small", "pending error: " + e.message)); }
+}
+
 async function loadLogs() {
   const which = $("which").value, tail = $("tail").value;
   const box = $("logs"); box.innerHTML = "";
@@ -98,4 +119,4 @@ async function loadTrace() {
 $("logs-refresh").addEventListener("click", loadLogs);
 $("trace-go").addEventListener("click", loadTrace);
 $("sha").addEventListener("keydown", (e) => { if (e.key === "Enter") loadTrace(); });
-loadStatus(); loadLogs();
+loadStatus(); loadPending(); loadLogs();

@@ -34,6 +34,14 @@ def main(argv=None) -> int:
     lp.add_argument("--issued"); lp.add_argument("--approvals")
     tr = sub.add_parser("trace", help="one action's timeline joined on decision_sha256")
     tr.add_argument("decision_sha256")
+    pd = sub.add_parser("pending", help="HIL queue: list pending 202 holds; approve/deny locally")
+    pd.add_argument("--approve", metavar="APPROVAL_REQUEST_ID",
+                    help="delegate approval to approver_cli (approver key stays in local custody)")
+    pd.add_argument("--deny", metavar="APPROVAL_REQUEST_ID",
+                    help="record a deny (with --reason) in the local console-audit log")
+    pd.add_argument("--reason", help="reason for the deny (required with --deny)")
+    pd.add_argument("--ttl", type=int, default=300, help="grant lifetime in seconds (approve)")
+    pd.add_argument("--yes", action="store_true", help="skip the confirm prompt (approve)")
     rp = sub.add_parser("run", help="start the localhost web console (127.0.0.1 only)")
     rp.add_argument("--port", type=int, default=8181)
 
@@ -63,6 +71,47 @@ def main(argv=None) -> int:
         for e in _logs.trace_by_decision(cfg.issuance_log, cfg.approval_log, a.decision_sha256):
             rest = {k: v for k, v in e.items() if k != "stage"}
             print(f"{e.get('stage'):16} {json.dumps(rest)}")
+        return 0
+    if a.cmd == "pending":
+        # HIL queue (P2). The human decides here; the GRANT is signed by approver_cli with the
+        # approver key in LOCAL custody - GLESAC delegates and records, it never signs (SoD).
+        from . import approvals as _appr
+        cfg = Config.from_env()
+        holds = _appr.pending_holds(cfg.approval_log, cfg.issuance_log)
+        if not a.approve and not a.deny:
+            for h in holds:
+                print(json.dumps(h))
+            sys.stderr.write(f"{len(holds)} pending hold(s)\n")
+            return 0
+        rid = a.approve or a.deny
+        hold = _appr.find_hold(holds, rid)
+        if hold is None:
+            sys.stderr.write(f"no pending hold with approval_request_id={rid}\n")
+            return 2
+        if a.deny:
+            if not a.reason:
+                sys.stderr.write("--deny requires --reason\n")
+                return 2
+            print(json.dumps(_appr.deny(hold, a.reason)))
+            return 0
+        sys.stderr.write("About to APPROVE a held high-impact decision (delegated to approver_cli):\n"
+                         f"  decision_sha256     : {hold.get('decision_sha256')}\n"
+                         f"  approval_request_id : {hold.get('approval_request_id')}\n"
+                         f"  context             : {json.dumps(hold.get('context', {}))}\n")
+        if not a.yes:
+            sys.stderr.write("Type 'approve' to delegate: ")
+            sys.stderr.flush()
+            if sys.stdin.readline().strip() != "approve":
+                sys.stderr.write("aborted (nothing delegated)\n")
+                return 1
+        try:
+            grant = _appr.approve(hold, ttl=a.ttl)
+        except (FileNotFoundError, RuntimeError, ValueError) as e:
+            sys.stderr.write(f"approve failed: {e}\n")
+            return 3
+        print(json.dumps(grant))
+        sys.stderr.write("grant emitted by approver_cli; present it to the gate "
+                         "(X-Elyon-Sol-Approval-Grant).\n")
         return 0
     if a.cmd == "run":
         from . import server

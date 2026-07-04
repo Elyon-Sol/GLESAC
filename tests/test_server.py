@@ -53,3 +53,23 @@ def test_static_ui_assets_serve():
     assert c.get("/").status_code == 200 and "GLESAC" in c.get("/").text
     js = c.get("/static/app.js"); assert js.status_code == 200 and "loadStatus" in js.text
     assert c.get("/static/style.css").status_code == 200
+
+def test_pending_route_lists_ungranted_holds():
+    """/api/pending is the READ-ONLY dashboard feed for the P2 HIL queue card."""
+    gov = Config(issuance_log=os.path.join(FIX, "gov_issuance.jsonl"),
+                 approval_log=os.path.join(FIX, "gov_approvals.jsonl"))
+    d = TestClient(server.build_app(gov)).get("/api/pending").json()
+    ids = [h["approval_request_id"] for h in d["pending"]]
+    assert ids == ["6c2496b29ecf45d59beeac0af2d64591"] and "glesac pending" in d["how_to_act"]
+    # the simple fixture set has no un-granted hold -> empty queue, no error
+    assert _client().get("/api/pending").json()["pending"] == []
+
+
+def test_no_mutating_web_routes_REVERT_CATCHER():
+    """SoD/local-mutation law (docs/SECURITY.md #2): the web console NEVER exposes a route
+    that mutates - approve/deny/rotation run locally via the CLIs. If anyone adds a POST/PUT/
+    DELETE/PATCH route (e.g. a web 'approve' button that acts), this goes RED."""
+    app = server.build_app(CFG)
+    for r in app.routes:
+        methods = getattr(r, "methods", None) or set()
+        assert not (set(methods) - {"GET", "HEAD"}), f"mutating route: {r.path} {methods}"

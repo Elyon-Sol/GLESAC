@@ -37,8 +37,16 @@ def test_no_signing_primitive_anywhere_in_package_REVERT_CATCHER():
     self-approval backdoor at CI time. Scans every module in the package.
     """
     pkg_dir = os.path.dirname(glesac.__file__)
-    banned = ("sign_grant", "make_grant", "Ed25519PrivateKey", "SigningKey", "private_key")
-    for path in glob.glob(os.path.join(pkg_dir, "*.py")):
+    banned = ("sign_grant", "make_grant", "build_grant", "Ed25519PrivateKey", "SigningKey",
+              "private_key", "from_private_bytes", "hazmat", "nacl.signing")
+    scan = glob.glob(os.path.join(pkg_dir, "*.py")) + \
+        glob.glob(os.path.join(pkg_dir, "webui", "*"))    # P2: the web UI is scanned too
+    assert any(p.endswith("approvals.py") for p in scan)   # the P2 module IS in scope
+    for path in scan:
         src = open(path, encoding="utf-8").read()
         for b in banned:
             assert b not in src, f"{os.path.basename(path)} must not contain '{b}' - GLESAC never signs (SoD)."
+    # and no crypto-capable import anywhere in the package: signing is structurally impossible
+    for path in glob.glob(os.path.join(pkg_dir, "*.py")):
+        src = open(path, encoding="utf-8").read()
+        assert "import cryptography" not in src and "from cryptography" not in src
