@@ -70,10 +70,13 @@ importing core internals. Proprietary, private repo.
   `EVIDENCE/runtime/`. The startup wiring-guard (G-01/G-04/G-06) forced this - it fail-closed
   until R1 + logs were wired. Gate on Elyon-Sol `bd1159b`; systemd unit `elyon-gate` with a
   drop-in override for the shim ExecStart.
+- **POLISH DONE (freshness chip live-refresh).** `/api/status` now takes `probe` (default True);
+  the dashboard polls `?probe=0` every 60s to live-refresh the signed-record freshness chip via a
+  cheap local re-read (no repeated node probes) and shows an "as of" time. GET-only, localhost -
+  security law unchanged; test `test_status_probe_false_skips_node_probes_but_keeps_freshness`
+  added (39 passed, 2 skipped). This closes the last named backlog cosmetic.
 - **No scheduled phase after LIVE-1.** Backlog candidates (build only when needed): consume gate
-  `/audit` for a remote-log view; local session token for shared boxes (DESIGN section 5);
-  live-refresh the signed-record freshness chip in `/api/status` (currently a startup snapshot,
-  reads "stale" after its 5-min TTL - cosmetic).
+  `/audit` for a remote-log view; local session token for shared boxes (DESIGN section 5).
 
 ## Carryover / operator housekeeping (from the LIVE-1 session)
 

@@ -35,8 +35,11 @@ def build_app(config: Optional[Config] = None):
         return {"ok": True, "app": "glesac", "bind": LOCALHOST}
 
     @app.get("/api/status")
-    def api_status():
-        return _status.gather(cfg)
+    def api_status(probe: bool = True):
+        # probe=false: cheap local re-read (signed-record freshness + readiness), no node
+        # network probes. The dashboard polls this on an interval to live-refresh the
+        # freshness chip without repeatedly hitting the public nodes. Still GET-only.
+        return _status.gather(cfg, probe=probe)
 
     @app.get("/api/logs")
     def api_logs(which: str = "issued", tail: int = 50, decision: Optional[str] = None):

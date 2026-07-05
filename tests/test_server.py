@@ -31,6 +31,17 @@ def test_status_and_logs_routes_read_fixtures():
     assert logs["records"][0]["decision_sha256"] == "bbb222"
 
 
+def test_status_probe_false_skips_node_probes_but_keeps_freshness():
+    """The dashboard polls /api/status?probe=0 on an interval to live-refresh the signed-record
+    freshness chip cheaply. probe=false must NOT run node network probes (empty nodes map) while
+    still returning the recomputed signed-record freshness + readiness. Still GET-only."""
+    c = _client()
+    st = c.get("/api/status?probe=0").json()
+    assert st["nodes"] == {}
+    assert st["signed_record"]["fresh"] is True
+    assert st["readiness"]["DEFAULT_SECURE"] is True
+
+
 def test_trace_route():
     tl = _client().get("/api/trace/aaa111").json()["timeline"]
     assert [e["stage"] for e in tl] == ["issued", "approval_request", "grant_consumed"]

@@ -9,10 +9,10 @@ function chip(label, val) {
   return el("span", "chip " + cls, label + (val === true ? " ✓" : val === false ? " ✗" : " –"));
 }
 
-async function loadStatus() {
+async function loadStatus(probe = true) {
   const box = $("status-card");
   try {
-    const s = await api("/api/status");
+    const s = await api("/api/status" + (probe ? "" : "?probe=0"));
     const p = $("predicates"); p.innerHTML = "";
     Object.entries(s.readiness || {}).forEach(([k, v]) => p.appendChild(chip(k, v)));
 
@@ -24,14 +24,19 @@ async function loadStatus() {
         const row = el("div", "kv"); row.appendChild(el("b", null, k)); row.appendChild(el("span", null, String(v))); sd.appendChild(row);
       });
       sd.appendChild((() => { const r = el("div", "kv"); r.appendChild(el("b", null, "fresh")); r.appendChild(chip(sr.fresh ? "fresh" : "stale", sr.fresh)); return r; })());
+      sd.appendChild((() => { const r = el("div", "kv muted small"); r.appendChild(el("b", null, "as of")); r.appendChild(el("span", null, new Date().toLocaleTimeString())); return r; })());
     } else { sd.appendChild(el("div", "kv muted", "no signed record configured")); }
 
-    const nd = $("nodes"); nd.innerHTML = ""; nd.appendChild(el("div", "muted small", "nodes"));
-    Object.entries(s.nodes || {}).forEach(([name, info]) => {
-      const ok = info.state === "reachable";
-      nd.appendChild(chip(name + ":" + info.state, ok ? true : (info.state === "unconfigured" ? null : false)));
-    });
-    if (!Object.keys(s.nodes || {}).length) nd.appendChild(el("span", "muted small", " (no node URLs set)"));
+    // Node probes are only present on a full (probe=true) fetch; the cheap interval refresh
+    // (probe=false) leaves the existing node chips in place rather than clobbering them.
+    if (probe) {
+      const nd = $("nodes"); nd.innerHTML = ""; nd.appendChild(el("div", "muted small", "nodes"));
+      Object.entries(s.nodes || {}).forEach(([name, info]) => {
+        const ok = info.state === "reachable";
+        nd.appendChild(chip(name + ":" + info.state, ok ? true : (info.state === "unconfigured" ? null : false)));
+      });
+      if (!Object.keys(s.nodes || {}).length) nd.appendChild(el("span", "muted small", " (no node URLs set)"));
+    }
 
     const cap = $("capabilities"); cap.innerHTML = "";
     const caps = s.capabilities || {};
@@ -166,3 +171,6 @@ $("logs-refresh").addEventListener("click", loadLogs);
 $("trace-go").addEventListener("click", loadTrace);
 $("sha").addEventListener("keydown", (e) => { if (e.key === "Enter") loadTrace(); });
 loadStatus(); loadPending(); loadLogs(); loadAudit();
+// Live-refresh the signed-record freshness chip within its 5-min TTL. Cheap local re-read
+// (probe=false: no node re-probe), GET-only, localhost.
+setInterval(() => loadStatus(false), 60000);
