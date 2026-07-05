@@ -14,7 +14,7 @@ from . import decision_logs as _logs
 
 try:
     from fastapi import FastAPI
-    from fastapi.responses import FileResponse
+    from fastapi.responses import FileResponse, HTMLResponse
     from fastapi.staticfiles import StaticFiles
 except Exception:  # pragma: no cover
     FastAPI = None
@@ -81,11 +81,26 @@ def build_app(config: Optional[Config] = None):
     if os.path.isdir(_WEBUI_DIR):
         app.mount("/static", StaticFiles(directory=_WEBUI_DIR), name="static")
 
+    def _asset_ver(name):
+        # short content hash so a rebuilt app.js/style.css always gets a new URL
+        # (browsers can heuristically cache a script by URL even with no-store on
+        # the page; a content-versioned URL forces a fresh fetch). Read-only.
+        import hashlib
+        try:
+            with open(os.path.join(_WEBUI_DIR, name), "rb") as fh:
+                return hashlib.sha256(fh.read()).hexdigest()[:10]
+        except OSError:
+            return "0"
+
     @app.get("/")
     def index():
         idx = os.path.join(_WEBUI_DIR, "index.html")
         if os.path.exists(idx):
-            return FileResponse(idx)
+            with open(idx, encoding="utf-8") as fh:
+                html = fh.read()
+            html = html.replace("/static/app.js", "/static/app.js?v=" + _asset_ver("app.js"))
+            html = html.replace("/static/style.css", "/static/style.css?v=" + _asset_ver("style.css"))
+            return HTMLResponse(html)
         return {"app": "glesac", "note": "webui assets not found; API is at /api/*"}
     return app
 

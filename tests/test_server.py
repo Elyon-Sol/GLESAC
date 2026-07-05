@@ -66,6 +66,14 @@ def test_static_ui_assets_serve():
     assert c.get("/static/style.css").status_code == 200
 
 
+def test_index_content_hashes_asset_urls():
+    """The dashboard HTML must reference app.js/style.css with a content-hash
+    ?v= query so a rebuilt UI is never served stale from browser cache."""
+    c = _client()
+    html = c.get("/").text
+    assert "/static/app.js?v=" in html and "/static/style.css?v=" in html
+
+
 def test_static_assets_are_no_store():
     """Local console must not serve a stale cached UI: every response carries
     Cache-Control: no-store so a rebuilt app.js/style.css is always fetched."""
