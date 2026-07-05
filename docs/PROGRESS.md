@@ -75,6 +75,19 @@ importing core internals. Proprietary, private repo.
   cheap local re-read (no repeated node probes) and shows an "as of" time. GET-only, localhost -
   security law unchanged; test `test_status_probe_false_skips_node_probes_but_keeps_freshness`
   added (39 passed, 2 skipped). This closes the last named backlog cosmetic.
+- **WEBUI DONE (click-to-detail + cache-hardening).** The web console's `request` (approval_request_id),
+  `decision` (decision_sha256), and `subject` (audit) cells - and every `action-trace` stage - open a
+  read-only detail modal with the full record; decision cells also wire to the trace view. Cache-hardened:
+  a `Cache-Control: no-store` middleware + content-hash `?v=` on the static asset URLs (fixes browser
+  script-caching that made a rebuilt UI look stale). Verified with a headless jsdom click-through;
+  localhost, GET-only, no signing primitive (SoD no-mutating-routes catcher green); 42 passed, 2 skipped.
+  On GLESAC `origin/main` (fa67030..0742ead).
+- **Typed-impact dependency (allowed direction).** Elyon-Sol shipped typed impact (per-interaction-type
+  classification: VL-132 evaluator + VL-133 wiring) DEFAULT-OFF. GLESAC's HIL console surfaces holds
+  correctly regardless; when Elyon-Sol turns typed impact ON (its coordinated deploy), the pending view
+  can label the interaction type. GLESAC consumes this BY INVOCATION; Elyon-Sol never references GLESAC
+  (one-directional - re-verified this session and a stray GLESAC reference scrubbed from the Elyon-Sol
+  deploy runbook). Strategy + roadmap: `docs/ASSESSMENT.md`; next-session opener: `docs/NEXT_SESSION.md`.
 - **No scheduled phase after LIVE-1.** Backlog candidates (build only when needed): consume gate
   `/audit` for a remote-log view; local session token for shared boxes (DESIGN section 5).
 
