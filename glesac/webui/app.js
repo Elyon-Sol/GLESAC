@@ -186,7 +186,9 @@ async function loadTrace() {
     if (!tl.length) { box.appendChild(el("li", "muted", "(no events for this decision)")); return; }
     tl.forEach(e => {
       const li = el("li", e.stage);
-      li.appendChild(el("span", "stage", e.stage));
+      const stage = el("span", "stage link", e.stage);
+      stage.addEventListener("click", () => openDetail("Trace \u00b7 " + e.stage, e));
+      li.appendChild(stage);
       const bits = [];
       if (e.approval_request_id) bits.push("req " + short(e.approval_request_id));
       if (e.grant_id) bits.push("grant " + short(e.grant_id));

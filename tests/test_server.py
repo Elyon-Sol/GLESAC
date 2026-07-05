@@ -89,6 +89,7 @@ def test_ui_click_to_detail_present():
     js = c.get("/static/app.js").text
     assert "openDetail" in js and "maybeLinkTd" in js
     assert "trace this decision" in js  # decision cells wire to the trace view
+    assert '"stage link"' in js          # trace timeline entries are clickable too
     assert 'id="detail-overlay"' in c.get("/").text
 
 def test_pending_route_lists_ungranted_holds():
