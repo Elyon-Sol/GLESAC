@@ -57,47 +57,38 @@ importing core internals. Proprietary, private repo.
   log-derived join on 404/unreachable - same record shape either way; CLI and card report the
   source. Card ergonomics: source badge, requested-at age, per-row copy-ready approve command.
   Verified live both ways (flag on -> source: gate with context; flag off -> 404 -> logs).
-- **No scheduled phase after P3.1.** Backlog candidates (build only when needed): consume gate
-  `/audit` for a remote-log view; local session token for shared boxes (DESIGN section 5).
+- **LIVE-1 DONE (operational, not code).** The full HIL loop was exercised end-to-end on the
+  PUBLIC gate (`gate.elyon-sol.io:8443`), 2026-07-04: mint -> 202 hold -> `glesac pending` shows
+  it with context -> human `glesac pending --approve` (approver key `approver-2026-07-04` in
+  laptop custody) -> present grant -> target `/received` 5->6 (exactly one action) -> re-present
+  -> `REF_APPROVAL_REQUEST_UNKNOWN` (single-use holds). `glesac trace`/`audit` corroborate the
+  same `grant_id` on both sides. This is the answer to "an approval queue that lets a human in
+  fact approve": proven live, not asserted.
+- **Live gate was upgraded this session** from a weeks-stale tree (bare `ELYON_APPROVER_PUBKEY_HEX`
+  pin, NO approval log) to the full R1 chain: signed approver-role key record + pinned root, run
+  via `deploy.governance.approver_trust_bootstrap:app`, durable issuance/approval logs under
+  `EVIDENCE/runtime/`. The startup wiring-guard (G-01/G-04/G-06) forced this - it fail-closed
+  until R1 + logs were wired. Gate on Elyon-Sol `bd1159b`; systemd unit `elyon-gate` with a
+  drop-in override for the shim ExecStart.
+- **No scheduled phase after LIVE-1.** Backlog candidates (build only when needed): consume gate
+  `/audit` for a remote-log view; local session token for shared boxes (DESIGN section 5);
+  live-refresh the signed-record freshness chip in `/api/status` (currently a startup snapshot,
+  reads "stale" after its 5-min TTL - cosmetic).
 
-## Visual overview
+## Carryover / operator housekeeping (from the LIVE-1 session)
 
-`docs/overview.svg` - the P3 communication & configuration map (trust boundary, invocation vs
-read vs network legs, env vars). Update it if the gate `/pending`,`/audit`
-read-endpoints are ever consumed.
-
-## Interface contract (all GLESAC depends on from Elyon-Sol)
-
-1. CLIs by invocation: `envelope_inspector` (inspect/reevaluate/reconcile), `approver_cli`.
-   Point at them with `ELYON_SOL_HOME` or PATH.
-1b. Gate read-endpoints (OPTIONAL, default-off on the gate): `GET /pending` (held-not-consumed
-   with public context), `GET /audit?tail=N`. Gate enables with `ELYON_GATE_READ_ENDPOINTS=1`;
-   GLESAC points at them with `GLESAC_GATE_PENDING_URL` and degrades to pulled logs when absent.
-2. JSONL schemas: issuance log (one envelope/line; `decision_sha256` top-level) and approval log
-   (`approval_request` / `grant_consumed`, keyed by `decision_sha256` + `approval_request_id`).
-3. Readiness JSON: `deployment_predicates` (DEFAULT_SECURE/END_TO_END_NO_SHORTCUT/ROOT_RECOVERY/
-   REAL_TRANSPORT with a `green` flag) + `capabilities`.
-Real-shape fixtures live in `tests/fixtures/` (`gov_issuance.jsonl`, `gov_approvals.jsonl`,
-`readiness_real.json`) so GLESAC builds and tests WITHOUT Elyon-Sol present.
-
-## Dev workflow notes
-
-- **Getting live data:** Elyon-Sol ships `deploy/governance/local_demo/run_local_governance.py`
-  - a single-box driver that runs the real 202->approve->consume flow and writes real
-  issuance/approval logs. Point GLESAC at those (`GLESAC_ISSUANCE_LOG` / `GLESAC_APPROVAL_LOG`).
-- **Config env vars:** `GLESAC_ISSUANCE_LOG`, `GLESAC_APPROVAL_LOG`, `GLESAC_READINESS`,
-  `GLESAC_SIGNED_RECORD`, `GLESAC_CONSOLE_AUDIT`, `GLESAC_{GATE,TARGET,AUTHZ,PUB}_URL`, `GLESAC_GATE_PENDING_URL`,
-  `ELYON_SOL_HOME`.
-- **Opt-in live-node check:** `GLESAC_LIVE_NODES=1 python -m pytest -q` additionally runs the
-  live-node smoke tests (`tests/test_live_nodes.py`, the 2 default skips) against whatever node
-  URLs are configured. Default suite stays hermetic - fixtures only, no network.
-- **Mount hazard (Cowork sandbox only):** host file-tool writes to this folder truncate
-  intermittently. When editing via the sandbox, write files through bash and verify byte counts
-  + `ast.parse`. Native (laptop) editing is unaffected.
-- **Tests:** `pip install -e . && python -m pytest -q` (or `python -m glesac.cli ...`).
-
-## Resume in one line
-
-Read this file + `docs/DESIGN.md` + `docs/SECURITY.md`, run the tests green (38 passed,
-2 skipped). P0-P3 are DONE; there is no scheduled next phase - pick up from the backlog
-candidates above only when a real need arrives.
+- **Attack-suite re-run REQUIRED** against the live gate - refusal-path wiring changed with the
+  R1 upgrade. `ELYON_LIVE_GATE_URL=https://gate.elyon-sol.io:8443` +
+  `EVIDENCE/proofs/attack_suite_live_runner.py` (deploy Phase 1.4). NOT yet run.
+- **Key record re-issue before 2026-08-03** - the approver key record has a 30-day TTL; rerun
+  `deploy/governance/make_approver_key_record.py --serial 2` on the laptop, ship the record,
+  restart the gate. An EXPIRED record fail-closes to an empty approver map (refuses all grants).
+- **Gate host OS reboot pending** ("*** System restart required ***" at login).
+- **CHALLENGE-DOC POLICY NOTE:** the LIVE manifest (`MANIFEST/manifest.json`) has NO `HIGH_IMPACT`
+  key, so under [FIX H1] `requires_approval` fail-closes to True for EVERY eligible mint - the
+  public gate is now in "everything-holds" mode. The challenge doc's "a mint immediately forwards
+  one action" positive control no longer happens. To restore it, declare an explicit
+  `HIGH_IMPACT` policy (even `[]`), which changes the manifest hash and requires republishing the
+  pins on Host B (target + sidecar). Operator decision, deferred.
+- **Deploy-host note:** the gate VPS runs a COPIED tree, not a git clone; updates need a full
+  `IMPLEMENTAT
