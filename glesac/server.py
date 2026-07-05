@@ -30,6 +30,16 @@ def build_app(config: Optional[Config] = None):
     cfg = config or Config.from_env()
     app = FastAPI(title="GLESAC - Gargoyles Ledge", docs_url="/api/docs")
 
+    @app.middleware("http")
+    async def _no_store(request, call_next):
+        # Local operator console: never let the browser cache the static UI or
+        # the live data, so a rebuilt app.js/style.css (or a refreshed log) is
+        # always current - avoids a stale cached copy of the console. Read-only;
+        # adds no route (the no-mutating-routes catcher is unaffected).
+        resp = await call_next(request)
+        resp.headers["Cache-Control"] = "no-store"
+        return resp
+
     @app.get("/api/health")
     def health():
         return {"ok": True, "app": "glesac", "bind": LOCALHOST}

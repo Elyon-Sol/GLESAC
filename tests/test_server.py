@@ -66,6 +66,14 @@ def test_static_ui_assets_serve():
     assert c.get("/static/style.css").status_code == 200
 
 
+def test_static_assets_are_no_store():
+    """Local console must not serve a stale cached UI: every response carries
+    Cache-Control: no-store so a rebuilt app.js/style.css is always fetched."""
+    c = _client()
+    assert c.get("/static/app.js").headers.get("cache-control") == "no-store"
+    assert c.get("/").headers.get("cache-control") == "no-store"
+
+
 def test_ui_click_to_detail_present():
     """request / decision / subject cells are clickable to a READ-ONLY detail
     panel (GET-only; no new web route - the no-mutating-routes catcher holds)."""
