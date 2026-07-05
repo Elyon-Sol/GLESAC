@@ -65,6 +65,16 @@ def test_static_ui_assets_serve():
     js = c.get("/static/app.js"); assert js.status_code == 200 and "loadStatus" in js.text
     assert c.get("/static/style.css").status_code == 200
 
+
+def test_ui_click_to_detail_present():
+    """request / decision / subject cells are clickable to a READ-ONLY detail
+    panel (GET-only; no new web route - the no-mutating-routes catcher holds)."""
+    c = _client()
+    js = c.get("/static/app.js").text
+    assert "openDetail" in js and "maybeLinkTd" in js
+    assert "trace this decision" in js  # decision cells wire to the trace view
+    assert 'id="detail-overlay"' in c.get("/").text
+
 def test_pending_route_lists_ungranted_holds():
     """/api/pending is the READ-ONLY dashboard feed for the P2 HIL queue card."""
     gov = Config(issuance_log=os.path.join(FIX, "gov_issuance.jsonl"),

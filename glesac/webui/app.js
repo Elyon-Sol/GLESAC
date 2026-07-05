@@ -70,6 +70,37 @@ function copyCmd(cmd, btn) {
   else window.prompt("copy:", cmd);
 }
 
+// Click-to-detail: a truncated cell opens the FULL record (read-only). GET-only,
+// localhost - no mutation, no new web route.
+function openDetail(title, record, actions) {
+  $("detail-title").textContent = title;
+  $("detail-body").textContent = JSON.stringify(record, null, 2);
+  const act = $("detail-actions"); act.innerHTML = "";
+  (actions || []).forEach(a => {
+    const b = el("button", "small", a.label);
+    b.addEventListener("click", a.onClick); act.appendChild(b);
+  });
+  $("detail-overlay").classList.remove("hidden");
+}
+function closeDetail() { $("detail-overlay").classList.add("hidden"); }
+function linkTd(text, title, record, actions) {
+  const td = el("td", "mono");
+  const a = el("span", "link", text);
+  a.addEventListener("click", () => openDetail(title, record, actions));
+  td.appendChild(a);
+  return td;
+}
+function maybeLinkTd(text, title, record, actions) {
+  return text ? linkTd(text, title, record, actions) : el("td", "mono muted", "");
+}
+function traceAction(sha) {
+  return { label: "trace this decision", onClick: () => {
+    if (!sha) return;
+    $("sha").value = sha; closeDetail(); loadTrace();
+    $("sha").scrollIntoView({ behavior: "smooth", block: "center" });
+  } };
+}
+
 async function loadPending() {
   const box = $("pending"); box.innerHTML = "";
   try {
@@ -84,8 +115,8 @@ async function loadPending() {
     t.appendChild(h);
     holds.forEach(r => {
       const tr = el("tr"); const ctx = r.context || {};
-      tr.appendChild(el("td", "mono", r.approval_request_id));
-      tr.appendChild(el("td", "mono", short(r.decision_sha256)));
+      tr.appendChild(maybeLinkTd(r.approval_request_id, "Approval request", r));
+      tr.appendChild(maybeLinkTd(short(r.decision_sha256), "Decision " + short(r.decision_sha256), r, [traceAction(r.decision_sha256)]));
       tr.appendChild(el("td", "small muted", ctx.target_url || ""));
       const req = r.requested_at ? age(r.requested_at) + " (" + r.requested_at.slice(0, 19) + ")" : "";
       tr.appendChild(el("td", "small muted", req));
@@ -114,7 +145,7 @@ async function loadAudit() {
       const tr = el("tr");
       tr.appendChild(el("td", "small muted", (r.ts || "").slice(0, 19)));
       tr.appendChild(el("td", null, r.action));
-      tr.appendChild(el("td", "mono", r.runbook || short(r.approval_request_id) || ""));
+      tr.appendChild(maybeLinkTd(r.runbook || short(r.approval_request_id) || "(record)", "Audit: " + (r.action || "record"), r));
       const det = r.reason || r.error || (r.grant_id ? "grant " + short(r.grant_id) : (r.returncode != null ? "rc " + r.returncode : ""));
       tr.appendChild(el("td", "small muted", det));
       t.appendChild(tr);
@@ -136,8 +167,8 @@ async function loadLogs() {
     recs.slice().reverse().forEach(r => {
       const tr = el("tr");
       tr.appendChild(el("td", null, r.type || (r.decision_sha256 ? "issued" : "?")));
-      tr.appendChild(el("td", "mono", short(r.decision_sha256)));
-      tr.appendChild(el("td", "mono", short(r.approval_request_id) || ""));
+      tr.appendChild(maybeLinkTd(r.decision_sha256 ? short(r.decision_sha256) : "", "Decision " + short(r.decision_sha256), r, r.decision_sha256 ? [traceAction(r.decision_sha256)] : []));
+      tr.appendChild(maybeLinkTd(r.approval_request_id ? short(r.approval_request_id) : "", "Approval request", r));
       const det = r.grant_id ? "grant " + short(r.grant_id) : (r.target_url || "");
       tr.appendChild(el("td", "small muted", det));
       t.appendChild(tr);
@@ -174,3 +205,6 @@ loadStatus(); loadPending(); loadLogs(); loadAudit();
 // Live-refresh the signed-record freshness chip within its 5-min TTL. Cheap local re-read
 // (probe=false: no node re-probe), GET-only, localhost.
 setInterval(() => loadStatus(false), 60000);
+$("detail-close").addEventListener("click", closeDetail);
+$("detail-overlay").addEventListener("click", (e) => { if (e.target === $("detail-overlay")) closeDetail(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDetail(); });
