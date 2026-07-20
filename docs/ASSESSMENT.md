@@ -1,5 +1,11 @@
 # Elyon-Sol + GLESAC — project assessment & recommendations
 
+> **Status (2026-07-20): SUPERSEDED — historical record.** GLESAC's development has been retired
+> and the project **open-sourced under AGPL-3.0** (the same license as the Elyon-Sol core). This
+> document's analysis — including its recommendation to keep GLESAC proprietary — reflects the
+> earlier plan and is preserved as a record of the thinking. It no longer describes the project's
+> license, visibility, or direction. Authoritative now: `LICENSE` (AGPL-3.0) and `README.md`.
+
 *An outside-but-informed read, prepared from the two repos (Elyon-Sol @ `435ae37`, GLESAC @
 `0742ead`), `elyon-sol.io`, the licensing docs, and the verification ledger. Written candidly, in
 the project's own house style of not overselling.*

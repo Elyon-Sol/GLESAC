@@ -1,5 +1,11 @@
 # GLESAC - progress & state (read this first on any new session)
 
+> **Status (2026-07-20): SUPERSEDED — historical record.** GLESAC's development has been retired
+> and the project **open-sourced under AGPL-3.0** (same license as the Elyon-Sol core). The
+> "proprietary / private repo / all-rights-reserved" notes below described the license and
+> visibility at the time and are now false: the repo is PUBLIC and AGPL-3.0. Authoritative:
+> `LICENSE` and `README.md`.
+
 Self-describing state so a fresh session (or a new collaborator) resumes from the REPO, not from
 memory or a prior chat. Keep it short and current. Authoritative design: `docs/DESIGN.md`;
 security law: `docs/SECURITY.md`.
