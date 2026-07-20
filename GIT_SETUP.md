@@ -1,12 +1,12 @@
 # Pushing GLESAC to its own repo
 
-1. Create an empty repo on GitHub named `glesac` (public, since the license is Apache-2.0).
+1. Create an empty repo on GitHub named `glesac` (public; AGPL-3.0, same as the Elyon-Sol core).
 2. From this unzipped folder:
 
 ```
 git init
 git add .
-git commit -m "GLESAC scaffold: OPA-style local-first operator toolkit (CLI + localhost console); Apache-2.0; consumes Elyon-Sol by invocation"
+git commit -m "GLESAC scaffold: OPA-style local-first operator toolkit (CLI + localhost console); AGPL-3.0; consumes Elyon-Sol by invocation"
 git branch -M main
 git remote add origin https://github.com/Elyon-Sol/glesac.git   # adjust owner if needed
 git push -u origin main

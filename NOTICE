@@ -1,6 +1,11 @@
 GLESAC - Gargoyles Ledge (the Elyon-Sol Administrative Console)
-Copyright (c) 2026 Justin LaPorte. All rights reserved.
+Copyright (c) 2026 Justin LaPorte.
 
-PROPRIETARY AND CONFIDENTIAL. Not for use, copying, or distribution
-except under a separate written license agreement signed by the Owner.
-See LICENSE. Licensing inquiries: admin@elyon-sol.io
+Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) - the
+same license as the Elyon-Sol core (https://github.com/Elyon-Sol/Elyon-Sol).
+You may use, modify, and distribute this software under the terms of that
+license; the full text is in the LICENSE file. Under the AGPL, running a
+modified version as a network service counts as distribution: you must then
+offer its complete source to the users of that service.
+
+Contact: admin@elyon-sol.io

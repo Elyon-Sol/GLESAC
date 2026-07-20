@@ -52,6 +52,8 @@ P2 HIL approval -> P3 administration. Operator capability; NOT external validati
 
 ## License
 
-Proprietary and confidential. Copyright (c) 2026 Justin LaPorte. All rights reserved.
-Not licensed for use, copying, or distribution except under a separate written agreement.
-See `LICENSE`. Licensing inquiries: admin@elyon-sol.io
+GNU Affero General Public License v3.0 (AGPL-3.0) - the same license as the
+[Elyon-Sol](https://github.com/Elyon-Sol/Elyon-Sol) core. Copyright (c) 2026
+Justin LaPorte. See `LICENSE` for the full text. Under the AGPL, offering a
+modified GLESAC as a network service obliges you to offer its source to that
+service's users. Contact: admin@elyon-sol.io

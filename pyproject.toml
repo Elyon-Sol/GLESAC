@@ -8,11 +8,10 @@ version = "0.0.1"
 description = "Gargoyles Ledge - the Elyon-Sol Administrative Console (OPA-style operator toolkit)"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "Proprietary - All Rights Reserved" }
+license = { text = "AGPL-3.0-or-later" }
 authors = [{ name = "Justin LaPorte" }]
 classifiers = [
-  "License :: Other/Proprietary License",
-  "Private :: Do Not Upload",
+  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
 ]
 dependencies = [
   # lean by intent; the web console uses FastAPI + uvicorn, bound to localhost.
