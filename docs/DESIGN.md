@@ -1,15 +1,12 @@
 # GLESAC - design (P0)
 
 > **Status (2026-07-20): SUPERSEDED — historical record.** GLESAC's development has been retired
-> and the project **open-sourced under AGPL-3.0** (same license as the Elyon-Sol core). Where this
-> document calls GLESAC "proprietary," that reflects the earlier plan; the current license is
-> AGPL-3.0 (`LICENSE`). The design substance (local-first, read-only console, SoD, whitelisted
-> runbooks) still describes the code.
+> and the project is **open source under AGPL-3.0** (same license as the Elyon-Sol core). The design
+> substance below (local-first, read-only console, SoD, whitelisted runbooks) still describes the code.
 
 Design of record for Gargoyles Ledge (the Elyon-Sol Administrative Console). This document is
-self-contained and lives ONLY in this repo; the open Elyon-Sol core repo intentionally contains
-no reference to GLESAC. GLESAC is proprietary operator tooling and consumes Elyon-Sol as an
-external dependency, by invocation, never by importing core internals.
+self-contained and lives in this repo. GLESAC is an AGPL-3.0 operator tooling layer that consumes
+Elyon-Sol as an external dependency, by invocation, never by importing core internals.
 
 ## 1. Purpose & operating model
 

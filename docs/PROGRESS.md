@@ -1,9 +1,8 @@
 # GLESAC - progress & state (read this first on any new session)
 
 > **Status (2026-07-20): SUPERSEDED — historical record.** GLESAC's development has been retired
-> and the project **open-sourced under AGPL-3.0** (same license as the Elyon-Sol core). The
-> "proprietary / private repo / all-rights-reserved" notes below described the license and
-> visibility at the time and are now false: the repo is PUBLIC and AGPL-3.0. Authoritative:
+> and the project is **open source under AGPL-3.0** (same license as the Elyon-Sol core), in a
+> public repo. The notes below are a record of the build. Authoritative license/status:
 > `LICENSE` and `README.md`.
 
 Self-describing state so a fresh session (or a new collaborator) resumes from the REPO, not from
@@ -15,7 +14,7 @@ security law: `docs/SECURITY.md`.
 Gargoyles Ledge (GLESAC) - the Elyon-Sol Administrative Console. An OPA-style, LOCAL-FIRST
 operator toolkit for an Elyon-Sol admission-gate deployment: a `glesac` CLI plus a `glesac run`
 localhost web console. It CONSUMES Elyon-Sol by INVOCATION (the installed CLIs) - never by
-importing core internals. Proprietary, private repo.
+importing core internals. AGPL-3.0, public repo.
 
 ## Decisions on record (do not silently reverse)
 
@@ -26,14 +25,14 @@ importing core internals. Proprietary, private repo.
   (localhost-only, local-custody HIL). OPA is the shape, not the network posture.
 - **Consume Elyon-Sol by invocation** (`envelope_inspector`, `approver_cli` CLIs + read the JSONL
   logs), never by import. Keeps the repos decoupled and "no re-implementation" true.
-- **Proprietary + private.** LICENSE is all-rights-reserved.
+- **AGPL-3.0, public** (was proprietary + private; reversed at retirement, 2026-07-20). LICENSE is AGPL-3.0, same as the Elyon-Sol core.
 - **HIL preserves SoD:** GLESAC contains NO signing primitive; the approver key stays in local
   custody and grants are signed by `approver_cli`. Enforced by a package-wide revert-catcher test.
 - **GLESAC is NEVER referenced in the public Elyon-Sol repo.** One-directional coupling.
 
 ## Phase status
 
-- **P0 DONE** - design (`docs/DESIGN.md`), proprietary license.
+- **P0 DONE** - design (`docs/DESIGN.md`).
 - **P1 DONE** - read-only console + CLI: `status`, `logs`, `trace`, `run` (localhost web
   dashboard); config via env; fixtures + tests. Reads the real Elyon-Sol `readiness.json`
   (`deployment_predicates` + `capabilities`) and the JSONL decision logs.
@@ -93,7 +92,7 @@ importing core internals. Proprietary, private repo.
   correctly regardless; when Elyon-Sol turns typed impact ON (its coordinated deploy), the pending view
   can label the interaction type. GLESAC consumes this BY INVOCATION; Elyon-Sol never references GLESAC
   (one-directional - re-verified this session and a stray GLESAC reference scrubbed from the Elyon-Sol
-  deploy runbook). Strategy + roadmap: `docs/ASSESSMENT.md`; next-session opener: `docs/NEXT_SESSION.md`.
+  deploy runbook). Next-session opener: `docs/NEXT_SESSION.md`.
 - **No scheduled phase after LIVE-1.** Backlog candidates (build only when needed): consume gate
   `/audit` for a remote-log view; local session token for shared boxes (DESIGN section 5).
 
